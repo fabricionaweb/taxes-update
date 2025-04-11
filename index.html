@@ -33,7 +33,7 @@
         const ctx = canvas.getContext("2d");
         const [width, height] = [canvas.getAttribute("width"), canvas.getAttribute("height")];
 
-        const tax = new URLSearchParams(document.location.search).get("tax")?.replace(/\W+/, "") || 125;
+        const tax = new URLSearchParams(document.location.search).get("tax")?.replace(/[^0-9.]/g, "") || 125;
         const originalPrice = 50;
         const updatedPrice = originalPrice + (originalPrice * tax / 100);
 
