@@ -1,66 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-<canvas id="canvas" width="1024" height="1536" style="max-width: 512px;"></canvas>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trump taxes</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="1024" height="1536" style="display: none"></canvas>
+    <img id="blob" width="512" style="display: block; margin: auto" />
 
-<script>
-document.addEventListener("DOMContentLoaded", async () => {
-    // find the static woff url from the source: https://fonts.googleapis.com/css2?family=Roboto:wght@600&text=$.0123456789
-    const font = new FontFace("Roboto", "url(https://fonts.gstatic.com/l/font?kit=KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYaammWmgP6uGwX7VwC5k1A1f4&skey=a0a0114a1dcab3ac&v=v47)")
-    const img = new Image()
-    const canvas = document.getElementById("canvas")
-    const ctx = canvas.getContext("2d")
-    const [width, height] = [canvas.getAttribute("width"), canvas.getAttribute("height")]
-    const prices = {
-        from: {
-            value: '$50.00',
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        // find the static woff url from the source: https://fonts.googleapis.com/css2?family=Roboto:wght@600&text=$.0123456789
+        const font = new FontFace(
+          "Roboto",
+          "url(https://fonts.gstatic.com/l/font?kit=KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYaammWmgP6uGwX7VwC5k1A1f4&skey=a0a0114a1dcab3ac&v=v47)"
+        );
+        const template = new Image();
+        const canvas = document.getElementById("canvas");
+        const img = document.getElementById("blob");
+        const ctx = canvas.getContext("2d");
+        const [width, height] = [
+          canvas.getAttribute("width"),
+          canvas.getAttribute("height"),
+        ];
+
+        const tax =
+        new URLSearchParams(document.location.search).get("tax")?.replace(/\W+/, "") || 125;
+        const originalPrice = 50, updatedPrice = originalPrice + (originalPrice * tax / 100);
+
+        const prices = {
+          from: {
+            value: new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+            }).format(originalPrice),
             x: 500, y: 1045,
-        },
-        to: {
-            value: '$122.00',
+          },
+          to: {
+            value: new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+            }).format(updatedPrice),
             x: 485, y: 1210,
-        }
-    }
+          },
+        };
 
-    await font.load()
-    // needs to add it to document to canvas
-    document.fonts.add(font)
+        await font.load();
+        // needs to add it to document to canvas
+        document.fonts.add(font);
 
-    img.onload = () => {
-        ctx.drawImage(img, 0, 0, width, height)
-        ctx.textAlign = "center"
+        template.onload = () => {
+          ctx.drawImage(template, 0, 0, width, height);
+          ctx.textAlign = "center";
 
-        // original price
-        ctx.font = "120px Roboto"
-        ctx.fillText(prices.from.value, prices.from.x, prices.from.y)
+          // original price
+          ctx.font = "120px Roboto";
+          ctx.fillText(prices.from.value, prices.from.x, prices.from.y);
 
-        // new price
-        ctx.font = "160px Roboto"
-        ctx.fillText(prices.to.value, prices.to.x, prices.to.y)
+          // new price
+          ctx.font = "160px Roboto";
+          ctx.fillText(prices.to.value, prices.to.x, prices.to.y);
 
-        // draw the cross
-        const crossWidth = ctx.measureText(prices.from.value).width
-        const crossHeight = 5, crossAngle = 10
+          // draw the cross
+          const crossWidth = ctx.measureText(prices.from.value).width;
+          const crossHeight = 5, crossAngle = 10;
 
-        ctx.save()
-        ctx.translate(prices.from.x - (crossWidth / 2), prices.from.y)
-        ctx.rotate(crossAngle * Math.PI / 180 * -1)
-        ctx.fillRect(0, 0, crossWidth, crossHeight)
-        ctx.restore()
+          ctx.save();
+          ctx.translate(prices.from.x - crossWidth / 2, prices.from.y);
+          ctx.rotate(((crossAngle * Math.PI) / 180) * -1);
+          ctx.fillRect(0, 0, crossWidth, crossHeight);
+          ctx.restore();
 
-        ctx.save()
-        ctx.translate(prices.from.x - (crossWidth / 2), prices.from.y - 86) // 86 is approx the original price height
-        ctx.rotate(crossAngle * Math.PI / 180)
-        ctx.fillRect(0, 0, crossWidth, crossHeight)
-        ctx.restore()
-    }
-    img.src = "template.png"
-})
-</script>
-</body>
+          ctx.save();
+          ctx.translate(prices.from.x - crossWidth / 2, prices.from.y - 86); // 86 is approx the original price height
+          ctx.rotate((crossAngle * Math.PI) / 180);
+          ctx.fillRect(0, 0, crossWidth, crossHeight);
+          ctx.restore();
+
+          canvas.toBlob((blob) => {
+            img.src = URL.createObjectURL(blob);
+          });
+        };
+        template.src = "template.png";
+      });
+    </script>
+  </body>
 </html>
