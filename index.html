@@ -4,44 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trump taxes</title>
+    <style>
+      html { height: 100%; }
+      body {
+        background: #0b0900;
+        margin: 0;
+        min-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #canvas { display: none; }
+    </style>
   </head>
   <body>
-    <canvas id="canvas" width="1024" height="1536" style="display: none"></canvas>
-    <img id="blob" width="512" style="display: block; margin: auto" />
+    <canvas id="canvas" width="1024" height="1536"></canvas>
+    <img id="blob" width="512" />
 
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
         // find the static woff url from the source: https://fonts.googleapis.com/css2?family=Roboto:wght@600&text=$.0123456789
-        const font = new FontFace(
-          "Roboto",
+        const font = new FontFace("Roboto",
           "url(https://fonts.gstatic.com/l/font?kit=KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWuYaammWmgP6uGwX7VwC5k1A1f4&skey=a0a0114a1dcab3ac&v=v47)"
         );
         const template = new Image();
         const canvas = document.getElementById("canvas");
         const img = document.getElementById("blob");
         const ctx = canvas.getContext("2d");
-        const [width, height] = [
-          canvas.getAttribute("width"),
-          canvas.getAttribute("height"),
-        ];
+        const [width, height] = [canvas.getAttribute("width"), canvas.getAttribute("height")];
 
-        const tax =
-        new URLSearchParams(document.location.search).get("tax")?.replace(/\W+/, "") || 125;
-        const originalPrice = 50, updatedPrice = originalPrice + (originalPrice * tax / 100);
+        const tax = new URLSearchParams(document.location.search).get("tax")?.replace(/\W+/, "") || 125;
+        const originalPrice = 50;
+        const updatedPrice = originalPrice + (originalPrice * tax / 100);
 
         const prices = {
           from: {
-            value: new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-            }).format(originalPrice),
+            value: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(originalPrice),
             x: 500, y: 1045,
           },
           to: {
-            value: new Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-            }).format(updatedPrice),
+            value: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(updatedPrice),
             x: 485, y: 1210,
           },
         };
@@ -50,6 +52,7 @@
         // needs to add it to document to canvas
         document.fonts.add(font);
 
+        template.src = "template.png";
         template.onload = () => {
           ctx.drawImage(template, 0, 0, width, height);
           ctx.textAlign = "center";
@@ -63,8 +66,9 @@
           ctx.fillText(prices.to.value, prices.to.x, prices.to.y);
 
           // draw the cross
-          const crossWidth = ctx.measureText(prices.from.value).width;
-          const crossHeight = 5, crossAngle = 10;
+          const { width: crossWidth } = ctx.measureText(prices.from.value);
+          const crossHeight = 5;
+          const crossAngle = 10;
 
           ctx.save();
           ctx.translate(prices.from.x - crossWidth / 2, prices.from.y);
@@ -78,11 +82,8 @@
           ctx.fillRect(0, 0, crossWidth, crossHeight);
           ctx.restore();
 
-          canvas.toBlob((blob) => {
-            img.src = URL.createObjectURL(blob);
-          });
+          canvas.toBlob((blob) => img.src = URL.createObjectURL(blob));
         };
-        template.src = "template.png";
       });
     </script>
   </body>
